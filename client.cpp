@@ -87,7 +87,6 @@ void inBounds(int &x, int &y) {
 
 void startup(void) {
 	initscr();   /* Activate curses */
-	curs_set(0); /* Preven the cursor from showing */
 	cbreak();    /* Change stty so that characters are delieverd to the program as they are typed*/
 	mvaddstr(25, 0, "______________________________________________________________________________________________________");
 }
