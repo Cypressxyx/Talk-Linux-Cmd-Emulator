@@ -7,13 +7,16 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-
+#include <iostream>
 #define PORT_NUMBER 24
 #define MAXLINE 64
 #define LISTENQ 5
 
+void doReadChars(int);
+int readN(int fd, char *ptr, int size);
+
 int main(int argc, char **argv) {
-	int       listenFD, connFD;
+	int       listenFD, connFD, pid;
 	time_t    ticks;
 	char      buff[MAXLINE];
 	struct    sockaddr_in servaddr, cliaddr;
@@ -51,12 +54,37 @@ int main(int argc, char **argv) {
 		printf("Connection from %s port accepted %d\n", 
 						inet_ntop(AF_INET, &cliaddr.sin_addr, buff, sizeof(buff)),
 						ntohs(cliaddr.sin_port));
-		ticks = time(NULL);
-		snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
+		
+		//ticks = time(NULL);
+		if ( (pid=fork()) == 0) {	
+			close(listenFD);
+			doReadChars(connFD);
+			close(connFD);
+			exit(0);
+		}
+		/*snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
 		if (write(connFD, buff, strlen(buff)) < 0 ) {
 			fprintf(stderr, "Write failed %s\n", strerror(errno));
 			exit(1);
-		}
+		}*/
 		close(connFD);
 	}
 }
+
+void doReadChars(int connFD) {
+	printf("Hello\n");
+
+	/* get char from client */
+	char req = 0;
+	if ((readN(connFD, (char *)&req, sizeof(req)) < 0)) {
+		perror("Read Error");
+		exit(0);
+	}
+	std::cout << "req is: " << req << std::endl;;
+	close(connFD);
+}
+
+int readN(int connFD, char *c, int size) {
+	int val = read(connFD,c, 1);
+	return val;
+} 
