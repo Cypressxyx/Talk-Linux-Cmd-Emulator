@@ -67,13 +67,21 @@ int main(int argc, char **argv) {
 
 /* get char from client */
 void doReadChars(int connFD) {
+	char req = ' ';
+	int res;
 	while(true) {
-		char req = 0;
-		if ((readN(connFD, (char *)&req, sizeof(req)) < 0)) {
+		req = ' ';
+		if ((res = readN(connFD, (char *)&req, sizeof(req))) < 0) {
 			perror("Read Error");
 			exit(0);
 		}
+		if (res == 0) {
+			fprintf(stderr, "Connection Closed");
+			close(connFD);
+			break;
+		}
 		fprintf(stderr, "%c", req);
+		
 	}
 	close(connFD);
 }
