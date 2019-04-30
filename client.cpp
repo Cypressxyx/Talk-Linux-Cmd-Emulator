@@ -100,17 +100,6 @@ void terminate(void) {
 }
 
 int written(int fd, char *c, int size) {
-	/*
-	int no_left, no_written;
-	no_left = size;
-	while ( no_left > 0) {
-		no_written = write(fd, c, no_left);
-		if ( no_written <= 0) 
-			return no_written;
-		no_left -= no_written;
-		c += no_written;
-	}
-	return size - no_left;*/
 	int val = write(fd, c, 1);
 	return val;
 }

@@ -55,32 +55,27 @@ int main(int argc, char **argv) {
 						inet_ntop(AF_INET, &cliaddr.sin_addr, buff, sizeof(buff)),
 						ntohs(cliaddr.sin_port));
 		
-		//ticks = time(NULL);
 		if ( (pid=fork()) == 0) {	
 			close(listenFD);
 			doReadChars(connFD);
 			close(connFD);
 			exit(0);
 		}
-		/*snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
-		if (write(connFD, buff, strlen(buff)) < 0 ) {
-			fprintf(stderr, "Write failed %s\n", strerror(errno));
-			exit(1);
-		}*/
 		close(connFD);
 	}
 }
 
+/* get char from client */
 void doReadChars(int connFD) {
 	printf("Hello\n");
-
-	/* get char from client */
-	char req = 0;
-	if ((readN(connFD, (char *)&req, sizeof(req)) < 0)) {
-		perror("Read Error");
-		exit(0);
+	while(true) {
+		char req = 0;
+		if ((readN(connFD, (char *)&req, sizeof(req)) < 0)) {
+			perror("Read Error");
+			exit(0);
+		}
+		std::cout << "req is: " << req << std::endl;;
 	}
-	std::cout << "req is: " << req << std::endl;;
 	close(connFD);
 }
 
