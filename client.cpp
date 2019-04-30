@@ -22,12 +22,6 @@ void inBounds  (int &, int &);
 int written(int , char *, int);
 
 int main(int argc, char **argv) {
-	/* Create curses */
-	int x,y = 0;
-	startup();    /* Initilize Program */
-	move(x,y);    /* Move the curser to the top and left most block*/
-	refresh();    /* Refresh the screen */
-	/* end of create curses */
 
 	/* Create client to server connection */
 	int sockFD, n;
@@ -59,12 +53,21 @@ int main(int argc, char **argv) {
 	}
 	
 	/* end of creatin connections */
+
+	/* Create curses */
+	int x,y = 0;
+	startup();    /* Initilize Program */
+	move(x,y);    /* Move the curser to the top and left most block*/
+	refresh();    /* Refresh the screen */
+	/* end of create curses */
+
 	char c;
 	while(true) {
 		c = get_char();
 		mvaddch(y,x,c);
 		inBounds(x,y);
 		refresh();
+
 		/* send character to the server*/
 		if ((written(sockFD, (char *)&c, sizeof(c))) < 0) {
 			fprintf(stderr, "Failed to send character to server\n");
@@ -97,6 +100,7 @@ void terminate(void) {
 }
 
 int written(int fd, char *c, int size) {
+	/*
 	int no_left, no_written;
 	no_left = size;
 	while ( no_left > 0) {
@@ -106,6 +110,8 @@ int written(int fd, char *c, int size) {
 		no_left -= no_written;
 		c += no_written;
 	}
-	return size - no_left;
+	return size - no_left;*/
+	int val = write(fd, c, 1);
+	return val;
 }
 
