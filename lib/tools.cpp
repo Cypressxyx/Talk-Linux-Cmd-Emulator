@@ -12,11 +12,12 @@ void updatePos       (int &, int &);     // update position
 void writeAndSend    (int);              // write to screen and send to socket
 void recieveAndWrite (int);              // read from socket and write to screen
 void sanitizeAndUpdateInput(int &, int &, char );
+std::string charToStr(char ); 
 
 void startup(void) {
 	initscr();
 	cbreak();
-	mvaddstr(25,0,"----------");
+	mvhline(LINES / 2, 0,ACS_HLINE,COLS);
 
 }
 
@@ -55,20 +56,26 @@ void recieveAndWrite(int connFD) {
 	close(connFD);
 }
 
-bool checkBackSpace(char c) {
+
+std::string charToStr(char c) {
 	std::stringstream stream;
 	stream << std::hex << int(c);
-	std::string res(stream.str());
-	return true ? (res == "7f" || res == "08") : false;
+	return stream.str();
 }
 
 void sanitizeAndUpdateInput(int &x, int &y, char c) {
-	if (checkBackSpace(c)) {
-		x = x - 1;
-		mvaddch(y,x,' ');
-		x = x - 1;
-	} else
+	std::string charInStr = charToStr(c);
+	if (charInStr ==  "7f" or charInStr == "08") { //delete in mac, backspace in windows
+			x = x - 1;
+			mvaddch(y,x,' ');
+			x = x - 1;
+	} else {
+		if (charInStr ==  "d") {    // new line
+			x = -1;
+			y = y + 1;
+		}
 		mvaddch(y,x,c);
+	}
 	updatePos(x,y);
 	refresh();
 }

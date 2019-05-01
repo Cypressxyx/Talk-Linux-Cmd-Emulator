@@ -61,6 +61,6 @@ void runTalkClient(int clientFD) {
 	refresh();    /* Refresh the screen */
 	std::thread writeThread(writeAndSend, clientFD);
 	std::thread recieveThread(recieveAndWrite, clientFD);
-	writeThread.join();
+	while(1) {}
 	terminate();  /* Terminate Program */
 }
