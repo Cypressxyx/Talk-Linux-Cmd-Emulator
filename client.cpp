@@ -12,14 +12,12 @@
 #include <errno.h>
 #include <string.h>
 
-#include "lib/getChar.hpp"
+//#include "lib/getChar.hpp"
+#include "lib/tools.cpp"
+
 #define PORT_NUMBER 24
 #define MAXLINE 200
 
-void startup   (void);
-void terminate (void);
-void inBounds  (int &, int &);
-int written(int , char *, int);
 
 int main(int argc, char **argv) {
 
@@ -65,41 +63,14 @@ int main(int argc, char **argv) {
 	while(true) {
 		c = get_char();
 		mvaddch(y,x,c);
-		inBounds(x,y);
+		updatePos(x,y);
 		refresh();
 
 		/* send character to the server*/
-		if ((written(sockFD, (char *)&c, sizeof(c))) < 0) {
+		if ((writeTo(sockFD, (char *)&c)) < 0) {
 			fprintf(stderr, "Failed to send character to server\n");
 			exit(0);
 		}
 	}
 	terminate();  /* Terminate Program */
 }
-
-void inBounds(int &x, int &y) {
-	if (x > 65) {
-		x = 0;
-		y += 1;
-	} else 
-		x += 1;
-}
-
-void startup(void) {
-	initscr();   /* Activate curses */
-	cbreak();    /* Change stty so that characters are delieverd to the program as they are typed*/
-	mvaddstr(25, 0, "______________________________________________________________________________________________________");
-}
-
-void terminate(void) {
-	mvcur(0, COLS-1, LINES-1, 0);
-	clear();
-	refresh();
-	endwin();
-}
-
-int written(int fd, char *c, int size) {
-	int val = write(fd, c, 1);
-	return val;
-}
-

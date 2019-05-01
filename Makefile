@@ -1,8 +1,11 @@
-talk.x:  client.o getChar.o server.o
+talk.x:  client.o getChar.o server.o server.x
 	g++ -ggdb -o talk.x main.o getChar.o -lcurses -ltermcap
 
+server.x: getChar.o
+	g++ -ggdb -o server.x server.cpp getChar.o -lcurses -ltermcap -pthread -std=c++17
+
 server.o: server.cpp
-	g++ -c -ggdb server.cpp -o server.o
+	g++ -c -ggdb server.cpp -o server.o -pthread --std=c++11
 
 client.o: client.cpp
 	g++ -c -ggdb client.cpp -o main.o
@@ -11,4 +14,4 @@ getChar.o: lib/getChar.cpp
 	gcc -c -ggdb lib/getChar.cpp -o getChar.o
 
 clean:
-	/bin/rm -f screen.x screen.o getChar.o *~
+	/bin/rm -f *.x *.o *.out *~ 

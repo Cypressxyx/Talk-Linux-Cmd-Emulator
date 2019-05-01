@@ -1,4 +1,5 @@
 #include <time.h>
+#include <thread>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,16 +9,23 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
+
+#include <curses.h>
+#include "lib/tools.cpp" 
+
 #define PORT_NUMBER 24
 #define MAXLINE 64
 #define LISTENQ 5
 
-void doReadChars(int);
-int readN(int fd, char *ptr, int size);
+bool recieveTerminate = false;
+bool sendTerminate    = false;
+
+void runTalkServer   (int);
+void recieveAndWrite (int);
+void writeAndSend    (int);
 
 int main(int argc, char **argv) {
 	int       listenFD, connFD, pid;
-	time_t    ticks;
 	char      buff[MAXLINE];
 	struct    sockaddr_in servaddr, cliaddr;
 	socklen_t len;
@@ -57,7 +65,7 @@ int main(int argc, char **argv) {
 		
 		if ( (pid=fork()) == 0) {	
 			close(listenFD);
-			doReadChars(connFD);
+			runTalkServer(connFD);
 			close(connFD);
 			exit(0);
 		}
@@ -65,28 +73,52 @@ int main(int argc, char **argv) {
 	}
 }
 
-/* get char from client */
-void doReadChars(int connFD) {
+/* Recieve and send from talk client */
+void runTalkServer(int connFD) {
+	startup();
+	move(0,0);
+	refresh();
+	std::thread recieveThread(recieveAndWrite, connFD);
+	std::thread writeThread(writeAndSend, connFD);
+	while (recieveTerminate == false) {}
+	recieveTerminate = false;
+	sendTerminate    = false;
+	close(connFD);
+	terminate();
+}
+
+void recieveAndWrite(int connFD) {
 	char req = ' ';
 	int res;
-	while(true) {
-		req = ' ';
-		if ((res = readN(connFD, (char *)&req, sizeof(req))) < 0) {
-			perror("Read Error");
+	int x = 0;
+	int y = 25;
+	while(1) {
+		if ((res = readFrom(connFD, (char *)&req)) < 0) {
+			perror("Read Error\n");
 			exit(0);
 		}
 		if (res == 0) {
-			fprintf(stderr, "Connection Closed");
-			close(connFD);
+			fprintf(stderr, "Connection has been closed\n");
 			break;
-		}
-		fprintf(stderr, "%c", req);
-		
+		}	
+		mvaddch(y,x,req);
+		updatePos(x,y);
+		refresh();
+		req = ' ';
 	}
 	close(connFD);
+	recieveTerminate = true;
 }
 
-int readN(int connFD, char *c, int size) {
-	int val = read(connFD,c, 1);
-	return val;
-} 
+void writeAndSend(int connFD) {
+	char c;
+	int x = 0;
+	int y = 0;
+	while(1) {
+		c = get_char();
+		mvaddch(y,x,c);
+		updatePos(x,y);
+		refresh();
+	}
+	sendTerminate = true;
+}
