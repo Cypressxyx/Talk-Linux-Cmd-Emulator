@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <thread>
 
 #include <sys/time.h>
 #include <stdio.h>
@@ -17,7 +18,7 @@
 
 #define PORT_NUMBER 24
 #define MAXLINE 200
-
+void runTalkClient(int);
 
 int main(int argc, char **argv) {
 
@@ -51,26 +52,14 @@ int main(int argc, char **argv) {
 	}
 	
 	/* end of creatin connections */
+	runTalkClient(sockFD);
+}
 
-	/* Create curses */
-	int x,y = 0;
+void runTalkClient(int clientFD) {
 	startup();    /* Initilize Program */
-	move(x,y);    /* Move the curser to the top and left most block*/
+	move(0,0);    /* Move the curser to the top and left most block*/
 	refresh();    /* Refresh the screen */
-	/* end of create curses */
-
-	char c;
-	while(true) {
-		c = get_char();
-		mvaddch(y,x,c);
-		updatePos(x,y);
-		refresh();
-
-		/* send character to the server*/
-		if ((writeTo(sockFD, (char *)&c)) < 0) {
-			fprintf(stderr, "Failed to send character to server\n");
-			exit(0);
-		}
-	}
+	std::thread writeThread(writeAndSend, clientFD);
+	writeThread.join();
 	terminate();  /* Terminate Program */
 }

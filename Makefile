@@ -8,7 +8,7 @@ server.o: server.cpp
 	g++ -c -ggdb server.cpp -o server.o -pthread --std=c++11
 
 client.o: client.cpp
-	g++ -c -ggdb client.cpp -o main.o
+	g++ -c -ggdb client.cpp -o main.o -pthread --std=c++11
 
 getChar.o: lib/getChar.cpp 
 	gcc -c -ggdb lib/getChar.cpp -o getChar.o
