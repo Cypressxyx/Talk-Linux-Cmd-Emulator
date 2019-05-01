@@ -31,7 +31,7 @@ void terminate(void) {
 void updatePos(int &x, int &y) {
 	if ( x > 65) {
 		x =  0;
-		y += 1;
+		y -= 1;
 	} else
 		x += 1;
 }
@@ -40,7 +40,7 @@ void recieveAndWrite(int connFD) {
 	char req = ' ';
 	int res;
 	int x = 0;
-	int y = LINES / 2 + 1;
+	int y = LINES - 1;
 	while(1) {
 		if ((res = readFrom(connFD, (char *)&req)) < 0) {
 			perror("Read Error\n");
@@ -72,19 +72,25 @@ void sanitizeAndUpdateInput(int &x, int &y, char c) {
 	} else {
 		if (charInStr ==  "d") {    // new line
 			x = -1;
-			y = y + 1;
 		}
 		mvaddch(y,x,c);
 	}
 	updatePos(x,y);
 	move(y,x);
+	if (charInStr == "d") {
+		int lineToMove = y < LINES/2 ? 0 : LINES/2 + 1; //writing prompt or sending prompt?
+		move(lineToMove,x); //move curser to begging
+		deleteln();  //delete the begging line and move all text up
+		move(y,x); //move cursor back to begging y
+		insdelln(1); //insert a new line there to reset cursor
+	}
 	refresh();
 }
 
 void writeAndSend(int sendSocketFD) {
 	char c;
 	int x = 0;
-	int y = 0;
+	int y = LINES/2 - 1;
 	while(1) {
 		c = get_char();
 		sanitizeAndUpdateInput(x,y,c);	
