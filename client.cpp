@@ -59,8 +59,8 @@ void runTalkClient(int clientFD) {
 	startup();    /* Initilize Program */
 	move(0,0);    /* Move the curser to the top and left most block*/
 	refresh();    /* Refresh the screen */
-	std::thread writeThread(writeAndSend, clientFD);
 	std::thread recieveThread(recieveAndWrite, clientFD);
+	std::thread writeThread(writeAndSend, clientFD);
 	while(1) {}
 	terminate();  /* Terminate Program */
 }

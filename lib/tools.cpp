@@ -40,7 +40,7 @@ void recieveAndWrite(int connFD) {
 	char req = ' ';
 	int res;
 	int x = 0;
-	int y = 25;
+	int y = LINES / 2 + 1;
 	while(1) {
 		if ((res = readFrom(connFD, (char *)&req)) < 0) {
 			perror("Read Error\n");
