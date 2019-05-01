@@ -16,7 +16,7 @@
 //#include "lib/getChar.hpp"
 #include "lib/tools.cpp"
 
-#define PORT_NUMBER 24
+#define PORT_NUMBER 8012
 #define MAXLINE 200
 void runTalkClient(int);
 

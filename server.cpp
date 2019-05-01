@@ -13,7 +13,7 @@
 #include <curses.h>
 #include "lib/tools.cpp"
 
-#define PORT_NUMBER 24
+#define PORT_NUMBER 8012
 #define MAXLINE 64
 #define LISTENQ 5
 
