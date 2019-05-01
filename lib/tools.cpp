@@ -77,6 +77,7 @@ void sanitizeAndUpdateInput(int &x, int &y, char c) {
 		mvaddch(y,x,c);
 	}
 	updatePos(x,y);
+	move(y,x);
 	refresh();
 }
 
