@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	bzero(&servaddr, sizeof(servaddr));
-	servaddr.sin_family        = AF_INET;             // Communicate using internet domain
+	servaddr.sin_family      = AF_INET;             // Communicate using internet domain
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);   // Who should we accept conections from
 	servaddr.sin_port        = htons(PORT_NUMBER);  // Port to listen on
 
