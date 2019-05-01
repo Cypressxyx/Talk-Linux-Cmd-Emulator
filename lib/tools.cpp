@@ -12,6 +12,7 @@ void updatePos       (int &, int &);     // update position
 void writeAndSend    (int);              // write to screen and send to socket
 void recieveAndWrite (int);              // read from socket and write to screen
 void sanitizeAndUpdateInput(int &, int &, char );
+void addNewLine      (int y, int x);
 std::string charToStr(char ); 
 
 void startup(void) {
@@ -31,7 +32,7 @@ void terminate(void) {
 void updatePos(int &x, int &y) {
 	if ( x > 65) {
 		x =  0;
-		y -= 1;
+		addNewLine(x,y);
 	} else
 		x += 1;
 }
@@ -63,6 +64,14 @@ std::string charToStr(char c) {
 	return stream.str();
 }
 
+void addNewLine(int x, int y) {
+	int lineToMove = y < LINES/2 ? 0 : LINES/2 + 1; //writing prompt or sending prompt?
+	move(lineToMove,x); //move curser to begging
+	deleteln();  //delete the begging line and move all text up
+	move(y,x); //move cursor back to begging y
+	insdelln(1); //insert a new line there to reset cursor
+}
+
 void sanitizeAndUpdateInput(int &x, int &y, char c) {
 	std::string charInStr = charToStr(c);
 	if (charInStr ==  "7f" or charInStr == "08") { //delete in mac, backspace in windows
@@ -77,13 +86,8 @@ void sanitizeAndUpdateInput(int &x, int &y, char c) {
 	}
 	updatePos(x,y);
 	move(y,x);
-	if (charInStr == "d") {
-		int lineToMove = y < LINES/2 ? 0 : LINES/2 + 1; //writing prompt or sending prompt?
-		move(lineToMove,x); //move curser to begging
-		deleteln();  //delete the begging line and move all text up
-		move(y,x); //move cursor back to begging y
-		insdelln(1); //insert a new line there to reset cursor
-	}
+	if (charInStr == "d") 
+		addNewLine(x,y);
 	refresh();
 }
 
