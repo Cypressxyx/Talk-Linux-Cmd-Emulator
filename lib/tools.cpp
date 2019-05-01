@@ -2,6 +2,7 @@
   Helper Functions
 -----------------------------*/
 #include "getChar.hpp"
+#include <sstream>
 
 int writeTo          (int, char *); // write to a socket
 int readFrom         (int, char *); // read from a socket
@@ -10,6 +11,7 @@ void terminate       (void);             // end curses
 void updatePos       (int &, int &);     // update position
 void writeAndSend    (int);              // write to screen and send to socket
 void recieveAndWrite (int);              // read from socket and write to screen
+void sanitizeAndUpdateInput(int &, int &, char );
 
 void startup(void) {
 	initscr();
@@ -47,12 +49,28 @@ void recieveAndWrite(int connFD) {
 			fprintf(stderr, "Connection has been closed\n");
 			break;
 		}
-		mvaddch(y,x,req);
-		updatePos(x,y);
-		refresh();
+		sanitizeAndUpdateInput(x,y,req);	
 		req = ' ';
 	}
 	close(connFD);
+}
+
+bool checkBackSpace(char c) {
+	std::stringstream stream;
+	stream << std::hex << int(c);
+	std::string res(stream.str());
+	return true ? (res == "7f" || res == "08") : false;
+}
+
+void sanitizeAndUpdateInput(int &x, int &y, char c) {
+	if (checkBackSpace(c)) {
+		x = x - 1;
+		mvaddch(y,x,' ');
+		x = x - 1;
+	} else
+		mvaddch(y,x,c);
+	updatePos(x,y);
+	refresh();
 }
 
 void writeAndSend(int sendSocketFD) {
@@ -61,9 +79,7 @@ void writeAndSend(int sendSocketFD) {
 	int y = 0;
 	while(1) {
 		c = get_char();
-		mvaddch(y,x,c);
-		updatePos(x,y);
-		refresh();
+		sanitizeAndUpdateInput(x,y,c);	
 		/* send character to the socket */
 		if ((writeTo(sendSocketFD, (char *)&c)) < 0 ) {
 			fprintf(stderr, "Failed to send character to server\n");
