@@ -3,14 +3,16 @@
 -----------------------------*/
 #include "getChar.hpp"
 #include <sstream>
+#include <iostream>
 
+bool quitProgram = false;
 int writeTo          (int, char *); // write to a socket
 int readFrom         (int, char *); // read from a socket
 void startup         (void);             // init curses
 void terminate       (void);             // end curses
 void updatePos       (int &, int &);     // update position
-void writeAndSend    (int);              // write to screen and send to socket
-void recieveAndWrite (int);              // read from socket and write to screen
+void writeAndSend    (int, bool &, bool &);              // write to screen and send to socket
+void recieveAndWrite (int, bool &, bool &);              // read from socket and write to screen
 void sanitizeAndUpdateInput(int &, int &, char );
 void addNewLine      (int y, int x);
 std::string charToStr(char ); 
@@ -37,12 +39,14 @@ void updatePos(int &x, int &y) {
 		x += 1;
 }
 
-void recieveAndWrite(int connFD) {
+void recieveAndWrite(int connFD, bool &ended, bool &other) {
 	char req = ' ';
 	int res;
 	int x = 0;
 	int y = LINES - 1;
 	while(1) {
+    if (other)
+        break;
 		if ((res = readFrom(connFD, (char *)&req)) < 0) {
 			perror("Read Error\n");
 			exit(0);
@@ -52,8 +56,12 @@ void recieveAndWrite(int connFD) {
 			break;
 		}
 		sanitizeAndUpdateInput(x,y,req);	
+    if (quitProgram)
+        break;
 		req = ' ';
 	}
+  terminate();
+  ended = true;
 	close(connFD);
 }
 
@@ -78,9 +86,11 @@ void sanitizeAndUpdateInput(int &x, int &y, char c) {
 			x = x - 1;
 			mvaddch(y,x,' ');
 			x = x - 1;
+	} else if (charInStr == "4") {
+      quitProgram = true;
 	} else {
 		if (charInStr ==  "d") {    // new line
-			x = -1;
+        x = -1;
 		}
 		mvaddch(y,x,c);
 	}
@@ -91,19 +101,26 @@ void sanitizeAndUpdateInput(int &x, int &y, char c) {
 	refresh();
 }
 
-void writeAndSend(int sendSocketFD) {
+void writeAndSend(int sendSocketFD, bool &ended, bool &other) {
 	char c;
 	int x = 0;
 	int y = LINES/2 - 1;
 	while(1) {
+
+    if (other)
+        break;
 		c = get_char();
 		sanitizeAndUpdateInput(x,y,c);	
+    if (quitProgram)
+        break;
 		/* send character to the socket */
 		if ((writeTo(sendSocketFD, (char *)&c)) < 0 ) {
 			fprintf(stderr, "Failed to send character to server\n");
 			exit(0);
 		}
 	}
+  ended = true;
+  terminate();
 }
 
 

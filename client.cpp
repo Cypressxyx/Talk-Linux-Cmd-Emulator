@@ -53,14 +53,18 @@ int main(int argc, char **argv) {
 	
 	/* end of creatin connections */
 	runTalkClient(sockFD);
+  return 0;
 }
 
 void runTalkClient(int clientFD) {
 	startup();    /* Initilize Program */
 	move(0,0);    /* Move the curser to the top and left most block*/
 	refresh();    /* Refresh the screen */
-	std::thread recieveThread(recieveAndWrite, clientFD);
-	std::thread writeThread(writeAndSend, clientFD);
-	while(1) {}
-	terminate();  /* Terminate Program */
+  bool writeEnded = false;
+  bool readEnded = false;
+	std::thread writeThread(writeAndSend, clientFD, std::ref(writeEnded), std::ref(readEnded));
+	std::thread recieveThread(recieveAndWrite, clientFD, std::ref(readEnded), std::ref(writeEnded));
+	while(!writeEnded) {}
+  std::cout << "waiting for recieve to end\n";
+  exit(0);
 }

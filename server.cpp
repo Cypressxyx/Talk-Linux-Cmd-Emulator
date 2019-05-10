@@ -67,20 +67,18 @@ int main(int argc, char **argv) {
 		}
 		close(connFD);
 	}
+  return 0;
 }
 
 /* Recieve and send from talk client */
 void runTalkServer(int connFD) {
 	startup();
 	move(0,0);
-	refresh();
-	bool recieveTerminate = false;
-	bool sendTerminate    = false;
-	std::thread recieveThread(recieveAndWrite, connFD);
-	std::thread writeThread(writeAndSend, connFD);
-	while (recieveTerminate == false) {}
-	recieveTerminate = false;
-	sendTerminate    = false;
+  bool readEnded  = false;
+  bool writeEnded = false;
+	std::thread recieveThread(recieveAndWrite, connFD, std::ref(readEnded), std::ref(writeEnded));
+	std::thread writeThread(writeAndSend, connFD, std::ref(writeEnded), std::ref(readEnded));
+	while (!readEnded or !writeEnded) {}
 	close(connFD);
-	terminate();
+  exit(0);
 }
